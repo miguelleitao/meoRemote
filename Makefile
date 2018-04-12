@@ -8,3 +8,14 @@ meo_remote.bmp: meo_remote_large.png
 clean:
 	rm -rf example
 
+commit:
+	git add .
+	git commit -m "new update"
+
+push: commit
+	git push
+
+pull:
+	git pull
+	git submodule update --recursive --remote
+

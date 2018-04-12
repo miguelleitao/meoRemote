@@ -1,3 +1,10 @@
+/*
+ * meoRemote
+ *
+ * jml, 2018
+ *
+ */
+
 #include <assert.h>
 #include <stdlib.h>
 #include <SDL.h>
@@ -180,18 +187,46 @@ int main() {
     int nButtons = 0;
     for( int y=0 ; y<5 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-	    
             //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
 	    Buttons[nButtons].x = x*38+23;
 	    Buttons[nButtons].y = y*30+30;
 	    nButtons++;
-printf("n %d\n",nButtons);
+
+ 	}
+    }
+
+    for( int y=0 ; y<3 ; y++ ) {
+        for( int x=0 ; x<3 ; x++ ) {
+            //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
+	    Buttons[nButtons].x = x*39+22;
+	    Buttons[nButtons].y = y*39+194;
+	    nButtons++;
+ 	}
+    }
+        for( int x=0 ; x<4 ; x++ ) {
+            //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
+	    Buttons[nButtons].x = x*28+19;
+	    Buttons[nButtons].y = 319;
+	    nButtons++;
+ 	}
+    for( int y=0 ; y<2 ; y++ ) {
+        for( int x=0 ; x<3 ; x++ ) {
+            //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
+	    Buttons[nButtons].x = x*39+22;
+	    Buttons[nButtons].y = y*30+354;
+	    nButtons++;
+ 	}
+    }
+    for( int y=0 ; y<3 ; y++ ) {
+        for( int x=0 ; x<4 ; x++ ) {
+            //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
+	    Buttons[nButtons].x = x*28+18;
+	    Buttons[nButtons].y = y*29+420;
+	    nButtons++;
  	}
     }
     for( int i=0 ; i<nButtons ; i++ ) {
 	aacircleColor(screen, Buttons[i].x, Buttons[i].y, POINT_RADIUS, COLOR_FIELD);
-printf("c %d, %d %d\n",nButtons, Buttons[i].x, Buttons[i].y);
-
     }
 
     quit = 0;
