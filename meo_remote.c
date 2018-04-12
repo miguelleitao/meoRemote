@@ -3,16 +3,16 @@
 #include <SDL.h>
 #include <SDL_gfxPrimitives.h>
 
-#define SCREEN_WIDTH  320
+#define SCREEN_WIDTH  121
 #define SCREEN_HEIGHT 640
 #define BPP 32
 
 #define TITLE_X 30
 #define TITLE_Y 10
 
-#define FIELD_PADDING 30
-#define BORDER_WIDTH 10
-#define POINT_RADIUS 20
+#define FIELD_PADDING 1
+#define BORDER_WIDTH 1
+#define POINT_RADIUS 10
 
 #define POINT_SPEED 3
 
@@ -47,8 +47,8 @@ static SDL_Surface *createSurface() {
 }
 
 static void initialDraw(SDL_Surface *screen) {
-    // fill all screen with white color
-    SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 255, 255, 255));
+    // fill all screen with black color
+    SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 
     stringColor(screen, TITLE_X, TITLE_Y, "Use arrows or mouse to move point, use Esc to exit.", 0x000000ff);
 
@@ -81,7 +81,7 @@ static void initialDraw(SDL_Surface *screen) {
     point_x = field_x + field_width/2;
     point_y = field_y + field_height/2;
 
-    filledCircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_POINT);
+    //aacircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_POINT);
 }
 
 static int limitValue(int x, int min, int max) {
@@ -98,10 +98,11 @@ static void movePoint(SDL_Surface *screen, int new_x, int new_y) {
                        field_y + field_height - BORDER_WIDTH - POINT_RADIUS - 1);
 
     if (new_x != point_x || new_y != point_y) {
-        filledCircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_FIELD);
+        //filledCircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_FIELD);
+	//aacircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_FIELD);
         point_x = new_x;
         point_y = new_y;
-        filledCircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_POINT);
+        aacircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_POINT);
     }
 }
 
@@ -168,6 +169,11 @@ int main() {
     else //Apply the image
             SDL_BlitSurface( gHelloWorld, NULL, screen, NULL );
 
+    for( int y=0 ; y<8 ; y++ ) {
+        for( int x=0 ; x<3 ; x++ ) {
+            aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
+ 	}
+    }
 
     quit = 0;
     while (!quit) {
