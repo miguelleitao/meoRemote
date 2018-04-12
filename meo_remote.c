@@ -24,6 +24,14 @@ static int field_x, field_y; // top-left corner
 static int field_width, field_height;
 static int point_x, point_y;
 
+typedef struct {
+  short int x, y;
+  char *tag;
+  char *desc;
+  short int code;
+} tButton;
+
+tButton Buttons[44];
 
 static void checkSDLResult(int result) {
     if (!result) {
@@ -169,10 +177,21 @@ int main() {
     else //Apply the image
             SDL_BlitSurface( gHelloWorld, NULL, screen, NULL );
 
-    for( int y=0 ; y<8 ; y++ ) {
+    int nButtons = 0;
+    for( int y=0 ; y<5 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-            aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
+	    
+            //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
+	    Buttons[nButtons].x = x*38+23;
+	    Buttons[nButtons].y = y*30+30;
+	    nButtons++;
+printf("n %d\n",nButtons);
  	}
+    }
+    for( int i=0 ; i<nButtons ; i++ ) {
+	aacircleColor(screen, Buttons[i].x, Buttons[i].y, POINT_RADIUS, COLOR_FIELD);
+printf("c %d, %d %d\n",nButtons, Buttons[i].x, Buttons[i].y);
+
     }
 
     quit = 0;
