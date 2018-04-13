@@ -7,8 +7,11 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <SDL.h>
 #include <SDL_gfxPrimitives.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 #define SCREEN_WIDTH  121
 #define SCREEN_HEIGHT 640
@@ -31,9 +34,10 @@ static int field_x, field_y; // top-left corner
 static int field_width, field_height;
 static int point_x, point_y;
 
-char *destAddr = "192.168.1.64";
+char *destAddr = "192.168.1.65";
 char *destMask = NULL;
-int  destPort   = 1234;
+int  destPort  = 8082;
+int  destSock  = 0;
 
 short int draw_buttons = 0;
 short int draw_mark = 0;
@@ -48,6 +52,15 @@ typedef struct {
 #define MAX_BUTTONS (44)
 tButton Buttons[MAX_BUTTONS];
 int nButtons = 0;
+
+
+/* 
+ * error - wrapper for perror
+ */
+void error(char *msg) {
+    perror(msg);
+    exit(0);
+}
 
 static void checkSDLResult(int result) {
     if (!result) {
@@ -142,20 +155,48 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
     return 0;
 }
 
+void sendCommand(int cmd) {
+	char msg[20];
+	sprintf(msg, "key=%d\n", cmd);
+    	/* send the message line to the server */
+    	int n = write(destSock, msg, strlen(msg));
+    	if (n < 0) error("ERROR writing to socket");
+}
+
 void processMouseDown(SDL_Surface *screen, Uint8 button, Uint16 x, Uint16 y) {
     if (button == 1) {
         movePoint(screen, x, y);
     }
+    int sel=-1;
+    int rad2 = POINT_RADIUS*POINT_RADIUS;
+printf("x y = %d %d\n", x,y);
+    for( int i=0 ; i<nButtons ; i++ ) {
+	int dx = x - Buttons[i].x;
+	int dy = y - Buttons[i].y;
+	int dist = dx*dx + dy*dy;
+
+	//printf("  dist = %d %d, %d %d\n", i, dist, Buttons[i].x, Buttons[i].y);
+	if ( dist<=rad2 ) {
+	    sel = i;
+	    break;
+	}
+    }
+    if ( sel>=0 ) {
+	int cod = Buttons[sel].code;
+        sendCommand(cod);
+	printf("enviou = %d %d\n", sel, cod);
+    }
 }
 
 
-void addButton(int x, int y) {
+void addButton(int x, int y, int cod) {
     if ( nButtons>=MAX_BUTTONS ) {
 	return;
     } 
     //aacircleColor(screen, x, y, POINT_RADIUS, COLOR_FIELD);
     Buttons[nButtons].x = x;
     Buttons[nButtons].y = y;
+    Buttons[nButtons].code = cod;
     nButtons++;
 }
 
@@ -163,25 +204,25 @@ int defineButtons() {
 
     for( int y=0 ; y<5 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-	    addButton(x*38+23, y*30+30);
+	    addButton(x*38+23, y*30+30, nButtons+46);
  	}
     }
     for( int y=0 ; y<3 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-            addButton(x*39+22, y*39+194);
+            addButton(x*39+22, y*39+194, nButtons+49);
  	}
     }
         for( int x=0 ; x<4 ; x++ ) {
-            addButton( x*28+19, 319);
+            addButton( x*28+19, 319, nButtons+49);
  	}
     for( int y=0 ; y<2 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-            addButton( x*39+22,y*30+354);
+            addButton( x*39+22,y*30+354, nButtons+49);
  	}
     }
     for( int y=0 ; y<3 ; y++ ) {
         for( int x=0 ; x<4 ; x++ ) {
-            addButton( x*28+18, y*29+420);
+            addButton( x*28+18, y*29+420, nButtons+49);
  	}
     }
 }
@@ -192,9 +233,7 @@ void drawButtons(SDL_Surface *screen) {
     }
 }
 
-void sendCommand(int cmd) {
 
-}
 
 int main(int argc, char **argv) {
     int quit;
@@ -259,6 +298,30 @@ int main(int argc, char **argv) {
 
     if ( draw_buttons ) drawButtons(screen);
 
+    /* socket: create the socket */
+    destSock = socket(AF_INET, SOCK_STREAM, 0);
+    if (destSock < 0) 
+        error("ERROR opening socket");
+
+    /* gethostbyname: get the server's DNS entry */
+    struct hostent *server = gethostbyname(destAddr);
+    if (server == NULL) {
+        fprintf(stderr,"ERROR, no such host as %s\n", destAddr);
+        exit(0);
+    }
+
+    /* build the server's Internet address */
+    struct sockaddr_in serveraddr;
+    bzero((char *) &serveraddr, sizeof(serveraddr));
+    serveraddr.sin_family = AF_INET;
+    bcopy((char *)server->h_addr, 
+	  (char *)&serveraddr.sin_addr.s_addr, server->h_length);
+    serveraddr.sin_port = htons(destPort);
+
+    /* connect: create a connection with the server */
+    if (connect(destSock, &serveraddr, sizeof(serveraddr)) < 0) 
+      error("ERROR connecting");
+
     quit = 0;
     while (!quit) {
         SDL_Event event;
@@ -277,6 +340,13 @@ int main(int argc, char **argv) {
                 case SDL_MOUSEBUTTONDOWN: {
                     SDL_MouseButtonEvent be = event.button;
                     processMouseDown(screen, be.button, be.x, be.y);
+
+
+/*
+	char *msg = "key=51\n";
+    	int n = write(destSock, msg, strlen(msg));
+    	if (n < 0) error("ERROR writing to socket");*/
+
                     break;
                 }
             }
@@ -286,6 +356,7 @@ int main(int argc, char **argv) {
         SDL_Delay(33); // ~ 60 fps
     }
 
+    close(destSock);
     return 0;
 }
 
