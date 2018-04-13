@@ -19,3 +19,7 @@ pull:
 	git pull
 	git submodule update --recursive --remote
 
+
+test:
+	echo 'dynamically_created_rule1' >> .gitignore
+	echo 'dynamically_created_rule2' >> .gitignore
