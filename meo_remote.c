@@ -39,6 +39,7 @@ typedef struct {
 } tButton;
 
 tButton Buttons[44];
+int nButtons = 0;
 
 static void checkSDLResult(int result) {
     if (!result) {
@@ -67,26 +68,6 @@ static void initialDraw(SDL_Surface *screen) {
 
     stringColor(screen, TITLE_X, TITLE_Y, "Use arrows or mouse to move point, use Esc to exit.", 0x000000ff);
 
-    // drawing border
-    // 1---2
-    // |   |
-    // 3---4
-    // 1-2
-    boxColor(screen, field_x, field_y,
-            field_x + field_width - 1, field_y + BORDER_WIDTH - 1,
-            COLOR_BORDER);
-    // 1-3
-    boxColor(screen, field_x, field_y,
-            field_x + BORDER_WIDTH - 1, field_y + field_height - 1,
-            COLOR_BORDER);
-    // 4-2
-    boxColor(screen, field_x + field_width - 1, field_y + field_height - 1,
-            field_x + field_width - BORDER_WIDTH - 1, field_y,
-            COLOR_BORDER);
-    // 4-3
-    boxColor(screen, field_x + field_width - 1, field_y + field_height - 1,
-            field_x, field_y + field_height - BORDER_WIDTH - 1,
-            COLOR_BORDER);
 
     // draw field
     boxColor(screen, field_x + BORDER_WIDTH, field_y + BORDER_WIDTH,
@@ -159,32 +140,8 @@ void processMouseDown(SDL_Surface *screen, Uint8 button, Uint16 x, Uint16 y) {
     }
 }
 
-int main() {
-    int quit;
-    SDL_Surface *screen = createSurface();
+int defineButtons() {
 
-
-
-
-
-    // calculate size of field and other initializations
-    field_x = FIELD_PADDING;
-    field_y = FIELD_PADDING + TITLE_Y + 10; // 10 is approximation of title height
-    field_width = SCREEN_WIDTH - field_x - FIELD_PADDING;
-    field_height = SCREEN_HEIGHT - field_y - FIELD_PADDING;
-
-    initialDraw(screen);
-
-    SDL_Surface *gHelloWorld = SDL_LoadBMP( "meo_remote.bmp" );
-    if( gHelloWorld == NULL )
-    {
-        printf( "Unable to load image %s! SDL Error: %s\n", "meo_remote.bmp", SDL_GetError() );
-  
-    }
-    else //Apply the image
-            SDL_BlitSurface( gHelloWorld, NULL, screen, NULL );
-
-    int nButtons = 0;
     for( int y=0 ; y<5 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
             //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
@@ -225,9 +182,36 @@ int main() {
 	    nButtons++;
  	}
     }
+}
+
+void drawButtons() {
     for( int i=0 ; i<nButtons ; i++ ) {
 	aacircleColor(screen, Buttons[i].x, Buttons[i].y, POINT_RADIUS, COLOR_FIELD);
     }
+}
+
+int main() {
+    int quit;
+    SDL_Surface *screen = createSurface();
+
+    // calculate size of field and other initializations
+    field_x = FIELD_PADDING;
+    field_y = FIELD_PADDING + TITLE_Y + 10; // 10 is approximation of title height
+    field_width = SCREEN_WIDTH - field_x - FIELD_PADDING;
+    field_height = SCREEN_HEIGHT - field_y - FIELD_PADDING;
+
+    initialDraw(screen);
+
+    SDL_Surface *gHelloWorld = SDL_LoadBMP( "meo_remote.bmp" );
+    if( gHelloWorld == NULL )     {
+        printf( "Unable to load image %s! SDL Error: %s\n", "meo_remote.bmp", SDL_GetError() );
+    }
+    else //Apply the image
+            SDL_BlitSurface( gHelloWorld, NULL, screen, NULL );
+
+    defineButtons();
+
+    drawButtons();
 
     quit = 0;
     while (!quit) {
