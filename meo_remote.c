@@ -12,6 +12,7 @@
 #include <SDL_gfxPrimitives.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <pthread.h>
 
 #define SCREEN_WIDTH  121
 #define SCREEN_HEIGHT 640
@@ -156,6 +157,7 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
 }
 
 void sendCommand(int cmd) {
+	if ( destSock<0 ) return;
 	char msg[20];
 	sprintf(msg, "key=%d\n", cmd);
     	/* send the message line to the server */
@@ -189,7 +191,7 @@ printf("x y = %d %d\n", x,y);
 }
 
 
-void addButton(int x, int y, int cod) {
+void addButton(int x, int y, int cod, char *tag) {
     if ( nButtons>=MAX_BUTTONS ) {
 	return;
     } 
@@ -197,34 +199,94 @@ void addButton(int x, int y, int cod) {
     Buttons[nButtons].x = x;
     Buttons[nButtons].y = y;
     Buttons[nButtons].code = cod;
+    Buttons[nButtons].tag = strdup(tag);
     nButtons++;
+}
+
+void addNumButton(int x, int y, int num) {
+    char numTag[8];
+    sprintf(numTag,"%d",num);
+    addButton(x,y,num+48,numTag);
 }
 
 int defineButtons() {
 
-    for( int y=0 ; y<5 ; y++ ) {
+    const int DX3 = 38;
+    const int CENTER = 61;
+    const int LEFT3  = CENTER-DX3;
+    const int RIGHT3 = CENTER+DX3;
+
+    const int BASE = 30;
+    const int BASE5 = BASE+13;
+    const int LINE = 30;
+
+    addButton(RIGHT3, BASE, 233, "Power");
+
+    for( int y=1 ; y<4 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-	    addButton(x*38+23, y*30+30, nButtons+46);
+	    addNumButton( x*38+23, y*LINE+BASE, nButtons );
  	}
     }
+    addNumButton( CENTER, 4*LINE+BASE, 0 );
+
+    addButton( LEFT3,  4*LINE+BASE, nButtons+42, "Num");
+    addButton( RIGHT3, 4*LINE+BASE, nButtons+42, "Num");
+
+    // vol    
+    addButton( LEFT3,  5*LINE+BASE5, 175, "Vol+");
+    addButton( LEFT3,  7*LINE+BASE5+17, 174, "Vol-");
+
+    // p+/p-
+    addButton( RIGHT3, 5*LINE+BASE5, 33, "Prog+");
+    addButton( RIGHT3, 7*LINE+BASE5+17, 34, "Prog-");
+
+
+/*
+    for( int y=3 ; y<4 ; y++ ) {
+        for( int x=0 ; x<3 ; x++ ) {
+	    addButton( x*DX3+LEFT, y*30+60, nButtons+42, "Num");
+ 	}
+    }
+
     for( int y=0 ; y<3 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-            addButton(x*39+22, y*39+194, nButtons+49);
+            addButton( x*39+22, y*39+194, nButtons+49, "");
  	}
     }
         for( int x=0 ; x<4 ; x++ ) {
-            addButton( x*28+19, 319, nButtons+49);
+            addButton( x*28+19, 319, nButtons+49, "");
  	}
     for( int y=0 ; y<2 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-            addButton( x*39+22,y*30+354, nButtons+49);
+            addButton( x*39+22, y*30+354, nButtons+49, "");
  	}
     }
     for( int y=0 ; y<3 ; y++ ) {
         for( int x=0 ; x<4 ; x++ ) {
-            addButton( x*28+18, y*29+420, nButtons+49);
+            addButton( x*28+18, y*29+420, nButtons+102, "");
  	}
     }
+*/
+
+// 33 prog+
+// 34 prog-
+// 36 menu
+// 37 <
+// 38 /\
+// 39 >
+// 40 v
+// 43 enter
+// 188 audio descrição
+// 190 legendagem digital
+// 233 power
+// 173 mute
+// 174 vol-
+// 175 vol+
+// 177 <-7seg
+// 178 ->
+// 179 pause
+
+
 }
 
 void drawButtons(SDL_Surface *screen) {
@@ -320,7 +382,7 @@ int main(int argc, char **argv) {
 
     /* connect: create a connection with the server */
     if (connect(destSock, &serveraddr, sizeof(serveraddr)) < 0) 
-      error("ERROR connecting");
+      perror("ERROR connecting");
 
     quit = 0;
     while (!quit) {
