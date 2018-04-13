@@ -31,6 +31,13 @@ static int field_x, field_y; // top-left corner
 static int field_width, field_height;
 static int point_x, point_y;
 
+char *destAddr = "192.168.1.64";
+char *destMask = NULL;
+int  destPort   = 1234;
+
+short int draw_buttons = 0;
+short int draw_mark = 0;
+
 typedef struct {
   short int x, y;
   char *tag;
@@ -38,7 +45,8 @@ typedef struct {
   short int code;
 } tButton;
 
-tButton Buttons[44];
+#define MAX_BUTTONS (44)
+tButton Buttons[MAX_BUTTONS];
 int nButtons = 0;
 
 static void checkSDLResult(int result) {
@@ -140,58 +148,96 @@ void processMouseDown(SDL_Surface *screen, Uint8 button, Uint16 x, Uint16 y) {
     }
 }
 
+
+void addButton(int x, int y) {
+    if ( nButtons>=MAX_BUTTONS ) {
+	return;
+    } 
+    //aacircleColor(screen, x, y, POINT_RADIUS, COLOR_FIELD);
+    Buttons[nButtons].x = x;
+    Buttons[nButtons].y = y;
+    nButtons++;
+}
+
 int defineButtons() {
 
     for( int y=0 ; y<5 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-            //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
-	    Buttons[nButtons].x = x*38+23;
-	    Buttons[nButtons].y = y*30+30;
-	    nButtons++;
-
+	    addButton(x*38+23, y*30+30);
  	}
     }
-
     for( int y=0 ; y<3 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-            //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
-	    Buttons[nButtons].x = x*39+22;
-	    Buttons[nButtons].y = y*39+194;
-	    nButtons++;
+            addButton(x*39+22, y*39+194);
  	}
     }
         for( int x=0 ; x<4 ; x++ ) {
-            //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
-	    Buttons[nButtons].x = x*28+19;
-	    Buttons[nButtons].y = 319;
-	    nButtons++;
+            addButton( x*28+19, 319);
  	}
     for( int y=0 ; y<2 ; y++ ) {
         for( int x=0 ; x<3 ; x++ ) {
-            //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
-	    Buttons[nButtons].x = x*39+22;
-	    Buttons[nButtons].y = y*30+354;
-	    nButtons++;
+            addButton( x*39+22,y*30+354);
  	}
     }
     for( int y=0 ; y<3 ; y++ ) {
         for( int x=0 ; x<4 ; x++ ) {
-            //aacircleColor(screen, x*38+23, y*30+30, POINT_RADIUS, COLOR_FIELD);
-	    Buttons[nButtons].x = x*28+18;
-	    Buttons[nButtons].y = y*29+420;
-	    nButtons++;
+            addButton( x*28+18, y*29+420);
  	}
     }
 }
 
-void drawButtons() {
+void drawButtons(SDL_Surface *screen) {
     for( int i=0 ; i<nButtons ; i++ ) {
 	aacircleColor(screen, Buttons[i].x, Buttons[i].y, POINT_RADIUS, COLOR_FIELD);
     }
 }
 
-int main() {
+void sendCommand(int cmd) {
+
+}
+
+int main(int argc, char **argv) {
     int quit;
+    while( argc>1 ) {
+	if ( argv[1][0]=='-' ) {
+	    switch (argv[1][1]) {
+		case 'b':
+		    draw_buttons = 1;
+		    break;
+	 	case 'c':
+		    draw_mark = 1;
+		    break;
+		case 'a':
+		    if ( argc>2 ) {
+		    	destAddr = argv[2];
+			destMask = NULL;
+		    	argc--;
+		    	argv++;
+		    }
+		    break;
+		case 'm':
+		    if ( argc>2 ) {
+		    	destMask = argv[2];
+		    	argc--;
+		    	argv++;
+		    }
+		    break;
+		case 'p':
+		    if ( argc>2 ) {
+		    	destPort = atoi(argv[2]);
+		    	argc--;
+		    	argv++;
+		    }
+		    break;
+	    }
+	}
+	else {
+	    sendCommand(atoi(argv[2]));
+	}
+	argc--;
+	argv++;
+    } // while
+		    
     SDL_Surface *screen = createSurface();
 
     // calculate size of field and other initializations
@@ -211,7 +257,7 @@ int main() {
 
     defineButtons();
 
-    drawButtons();
+    if ( draw_buttons ) drawButtons(screen);
 
     quit = 0;
     while (!quit) {
