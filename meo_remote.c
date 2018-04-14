@@ -236,6 +236,8 @@ void processMouseDown(SDL_Surface *screen, Uint8 button, Uint16 x, Uint16 y) {
         sendCommand(cod);
 	//printf("sent = %d %d\n", cod, sel);
 	selectedButton=sel;
+	screenDraw(screen);
+	if ( draw_mark ) markButton(screen, selectedButton);
     }
 }
 
