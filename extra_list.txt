@@ -1,3 +1,4 @@
+Extra functions not used by the standard remote command.
 
  19 Pause/Play
  93 noticias

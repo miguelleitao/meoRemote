@@ -56,7 +56,7 @@ tButton Button[MAX_BUTTONS];
 int nButtons = 0;
 int selectedButton = 0;
 
-SDL_Surface *gHelloWorld = NULL;
+SDL_Surface *wallPaper = NULL;
 
 /* 
  * error - wrapper for perror
@@ -108,7 +108,7 @@ static void screenDraw(SDL_Surface *screen) {
     SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 
     //Apply the image
-    SDL_BlitSurface( gHelloWorld, NULL, screen, NULL );
+    SDL_BlitSurface( wallPaper, NULL, screen, NULL );
 
     if ( draw_buttons ) drawButtons(screen);
 
@@ -284,30 +284,30 @@ int defineButtons() {
     }
     addNumButton( CENTER, 4*LINE+BASE, 0 );
 
-    addButton( LEFT3,  4*LINE+BASE, 0, "Backspace");   // code not set
+    addButton( LEFT3,  4*LINE+BASE,  0, "Backspace");   // code not set
     addButton( RIGHT3, 4*LINE+BASE, 43, "Enter");
 
     // vol    
-    addButton( LEFT3,  5*LINE+BASE5, 175, "Vol+");
+    addButton( LEFT3,  5*LINE+BASE5,    175, "Vol+");
     addButton( LEFT3,  7*LINE+BASE5+17, 174, "Vol-");
 
     // p+/p-
-    addButton( RIGHT3, 5*LINE+BASE5, 33, "Prog+");
+    addButton( RIGHT3, 5*LINE+BASE5,    33, "Prog+");
     addButton( RIGHT3, 7*LINE+BASE5+17, 34, "Prog-");
 
     // +
     addButton( CENTER, 5*LINE+BASE5,    38, "Up");
     addButton( CENTER, 7*LINE+BASE5+17, 40, "Down");
-    addButton( LEFT3,  6*LINE+BASE5+8, 37, "Left");
-    addButton( RIGHT3, 6*LINE+BASE5+8, 39, "Right");
+    addButton( LEFT3,  6*LINE+BASE5+8,  37, "Left");
+    addButton( RIGHT3, 6*LINE+BASE5+8,  39, "Right");
 
-    addButton( CENTER, 6*LINE+BASE5+8, 13, "Ok");
+    addButton( CENTER, 6*LINE+BASE5+8,  13, "Ok");
 
     addButton( CENTER, 8*LINE+BASE5+12, 36, "Menu");  
 
     // nav
-    addButton( QUAD1, 9*LINE+BASE5+5, 8, "Back");
-    addButton( QUAD2, 9*LINE+BASE5+5, 27, "Esc");
+    addButton( QUAD1, 9*LINE+BASE5+5,   8, "Back");
+    addButton( QUAD2, 9*LINE+BASE5+5,  27, "Esc");
     addButton( QUAD3, 9*LINE+BASE5+5, 112, "Guide");
     addButton( QUAD4, 9*LINE+BASE5+5, 114, "Club");
 
@@ -335,39 +335,11 @@ int defineButtons() {
 
     // bottom
     addButton( QUAD1, BASE12+2*LINE-1, 173, "Mute");
-    addButton( QUAD2, BASE12+2*LINE-1, 0,  "Sound");
-    addButton( QUAD3, BASE12+2*LINE-1, 111,  "Options");
-    addButton( QUAD4, BASE12+2*LINE-1, 0,  "TV/STB");
+    addButton( QUAD2, BASE12+2*LINE-1,   0, "Sound");   // Code not set
+    addButton( QUAD3, BASE12+2*LINE-1, 111, "Options");
+    addButton( QUAD4, BASE12+2*LINE-1,   0, "TV/STB");	// Local. No remote function
 
-
-/*
-    for( int y=3 ; y<4 ; y++ ) {
-        for( int x=0 ; x<3 ; x++ ) {
-	    addButton( x*DX3+LEFT, y*30+60, nButtons+42, "Num");
- 	}
-    }
-
-    for( int y=0 ; y<3 ; y++ ) {
-        for( int x=0 ; x<3 ; x++ ) {
-            addButton( x*39+22, y*39+194, nButtons+49, "");
- 	}
-    }
-        for( int x=0 ; x<4 ; x++ ) {
-            addButton( x*28+19, 319, nButtons+49, "");
- 	}
-    for( int y=0 ; y<2 ; y++ ) {
-        for( int x=0 ; x<3 ; x++ ) {
-            addButton( x*39+22, y*30+354, nButtons+49, "");
- 	}
-    }
-    for( int y=0 ; y<3 ; y++ ) {
-        for( int x=0 ; x<4 ; x++ ) {
-            addButton( x*28+18, y*29+420, nButtons+102, "");
- 	}
-    }
-*/
-
-  return nButtons;
+    return nButtons;
 }
 
 int main(int argc, char **argv) {
@@ -431,12 +403,12 @@ int main(int argc, char **argv) {
 	exit(0);
     }
 
-    gHelloWorld = SDL_LoadBMP( "meo_remote.bmp" );
-    if( gHelloWorld == NULL )     {
+    wallPaper = SDL_LoadBMP( "meo_remote.bmp" );
+    if( wallPaper == NULL )     {
         printf( "Unable to load image %s! SDL Error: %s\n", "meo_remote.bmp", SDL_GetError() );
     }
     else //Apply the image
-            SDL_BlitSurface( gHelloWorld, NULL, screen, NULL );
+            SDL_BlitSurface( wallPaper, NULL, screen, NULL );
 
     if ( draw_buttons ) drawButtons(screen);
     
