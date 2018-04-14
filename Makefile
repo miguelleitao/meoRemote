@@ -3,13 +3,16 @@
 CFLAGS=-Wall -Wextra
 LDLIBS=$(shell sdl-config --libs --cflags) -lSDL_gfx
 
-all: meo_remote meo_remote.bmp
+all: meo_remote meo_remote.bmp button_list.txt
 
 meo_remote.bmp: meo_remote_large.png
 	convert $< -resize 170x640 $@
 
+button_list.txt: meo_remote
+	./$< -l | cut -c4- |sort -n >$@
+
 clean:
-	rm -rf example
+	rm -rf meo_remote meo_remote.bmp button_list.txt
 
 commit:
 	git add .

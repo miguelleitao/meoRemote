@@ -40,6 +40,7 @@ char *destMask = NULL;
 int  destPort  = 8082;
 int  destSock  = 0;
 
+short int list_buttons = 0;
 short int draw_buttons = 0;
 short int draw_mark = 0;
 
@@ -50,7 +51,7 @@ typedef struct {
   short int code;
 } tButton;
 
-#define MAX_BUTTONS (44)
+#define MAX_BUTTONS (45)
 tButton Button[MAX_BUTTONS];
 int nButtons = 0;
 int selectedButton = 0;
@@ -93,6 +94,12 @@ void markButton(SDL_Surface *screen, int b) {
 void drawButtons(SDL_Surface *screen) {
     for( int i=0 ; i<nButtons ; i++ ) {
 	aacircleColor(screen, Button[i].x, Button[i].y, POINT_RADIUS, COLOR_FIELD);
+    }
+}
+
+void listButtons() {
+    for( int i=0 ; i<nButtons ; i++ ) {
+	printf("%2d %3d (%3d,%3d) \"%s\"\n",i, Button[i].code, Button[i].x, Button[i].y, Button[i].tag);
     }
 }
 
@@ -212,7 +219,7 @@ void processMouseDown(SDL_Surface *screen, Uint8 button, Uint16 x, Uint16 y) {
     }
     int sel=-1;
     const int rad2 = POINT_RADIUS*POINT_RADIUS;
-printf("x y = %d %d\n", x,y);
+    // printf("x y = %d %d\n", x,y);
     for( int i=0 ; i<nButtons ; i++ ) {
 	int dx = x - Button[i].x;
 	int dy = y - Button[i].y;
@@ -225,9 +232,10 @@ printf("x y = %d %d\n", x,y);
 	}
     }
     if ( sel>=0 ) {
-	selectedButton = Button[sel].code;
-        sendCommand(selectedButton);
-	printf("enviou = %d %d\n", sel, selectedButton);
+	int cod = Button[sel].code;
+        sendCommand(cod);
+	//printf("sent = %d %d\n", cod, sel);
+	selectedButton=sel;
     }
 }
 
@@ -276,7 +284,7 @@ int defineButtons() {
     }
     addNumButton( CENTER, 4*LINE+BASE, 0 );
 
-    addButton( LEFT3,  4*LINE+BASE, nButtons+42, "Back");   // code not set
+    addButton( LEFT3,  4*LINE+BASE, 0, "Backspace");   // code not set
     addButton( RIGHT3, 4*LINE+BASE, 43, "Enter");
 
     // vol    
@@ -293,13 +301,31 @@ int defineButtons() {
     addButton( LEFT3,  6*LINE+BASE5+8, 37, "Left");
     addButton( RIGHT3, 6*LINE+BASE5+8, 39, "Right");
 
-    addButton( CENTER, 6*LINE+BASE5+8, 34, "Ok");     // code not set
+    addButton( CENTER, 6*LINE+BASE5+8, 13, "Ok");
+
+    addButton( CENTER, 8*LINE+BASE5+12, 36, "Menu");  
+
+    // nav
+    addButton( QUAD1, 9*LINE+BASE5+5, 8, "Back");
+    addButton( QUAD2, 9*LINE+BASE5+5, 27, "Esc");
+    addButton( QUAD3, 9*LINE+BASE5+5, 112, "Guide");
+    addButton( QUAD4, 9*LINE+BASE5+5, 114, "Club");
+
+    // info    
+    addButton( LEFT3,   10*LINE+BASE5+10, 159, "Info");
+    addButton( CENTER,  10*LINE+BASE5+10, 156, "Swap");
+    addButton( RIGHT3,  10*LINE+BASE5+10, 115, "Folder");
+    // stop    
+    addButton( LEFT3,   11*LINE+BASE5+10, 123, "Stop");
+    addButton( CENTER,  11*LINE+BASE5+10, 119, "Pause/Play");
+    addButton( RIGHT3,  11*LINE+BASE5+10, 226, "Rec");
 
     // moves
-    addButton( QUAD1, BASE12, 177, "Prev");
-    addButton( QUAD2, BASE12, 40, "Rewind");
-    addButton( QUAD3, BASE12, 37, "Forward");
-    addButton( QUAD4, BASE12, 178, "Next");
+    addButton( QUAD1, BASE12, 117, "Prev");
+    addButton( QUAD2, BASE12, 118, "Rewind");
+    addButton( QUAD3, BASE12, 121, "Forward");
+    addButton( QUAD4, BASE12, 122, "Next");
+
 
     // Colors
     addButton( QUAD1, BASE12+LINE-1, 38, "Red");
@@ -309,9 +335,9 @@ int defineButtons() {
 
     // bottom
     addButton( QUAD1, BASE12+2*LINE-1, 173, "Mute");
-    addButton( QUAD2, BASE12+2*LINE-1, 40,  "Sound");
-    addButton( QUAD3, BASE12+2*LINE-1, 37,  "Options");
-    addButton( QUAD4, BASE12+2*LINE-1, 39,  "TV/STB");
+    addButton( QUAD2, BASE12+2*LINE-1, 0,  "Sound");
+    addButton( QUAD3, BASE12+2*LINE-1, 111,  "Options");
+    addButton( QUAD4, BASE12+2*LINE-1, 0,  "TV/STB");
 
 
 /*
@@ -340,24 +366,6 @@ int defineButtons() {
  	}
     }
 */
-
-// 33 prog+
-// 34 prog-
-// 36 menu
-// 37 <
-// 38 /\ .
-// 39 >
-// 40 v
-// 43 enter
-// 188 audio descrição
-// 190 legendagem digital
-// 233 power
-// 173 mute
-// 174 vol-
-// 175 vol+
-// 177 <-7seg
-// 178 ->
-// 179 pause
 
   return nButtons;
 }
@@ -395,6 +403,9 @@ int main(int argc, char **argv) {
 		    	argv++;
 		    }
 		    break;
+		case 'l':
+		    list_buttons = 1;
+		    break;
 	    }
 	}
 	else {
@@ -415,6 +426,11 @@ int main(int argc, char **argv) {
     initialDraw(screen);
     defineButtons();
 
+    if ( list_buttons ) {
+	listButtons();
+	exit(0);
+    }
+
     gHelloWorld = SDL_LoadBMP( "meo_remote.bmp" );
     if( gHelloWorld == NULL )     {
         printf( "Unable to load image %s! SDL Error: %s\n", "meo_remote.bmp", SDL_GetError() );
@@ -423,6 +439,7 @@ int main(int argc, char **argv) {
             SDL_BlitSurface( gHelloWorld, NULL, screen, NULL );
 
     if ( draw_buttons ) drawButtons(screen);
+    
 
     /* socket: create the socket */
     destSock = socket(AF_INET, SOCK_STREAM, 0);

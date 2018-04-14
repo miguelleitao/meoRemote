@@ -1,0 +1,27 @@
+
+ 19 Pause/Play
+ 93 noticias
+106 Search
+113 Favoritos
+120 play
+132 noticias
+133 meo kanal
+134 catálogo
+135 apps
+136 meo kanal em destaque
+137 catálogo
+138 apps
+140 noticias
+141 meo kanal em destaque
+142 catálogo
+143 apps
+150 on
+151 off
+157 options
+177 <-7seg
+178 ->
+179 pause
+188 audio descrição
+190 legendagem digital
+223 *Crash*
+
