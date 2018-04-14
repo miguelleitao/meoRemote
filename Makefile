@@ -1,3 +1,6 @@
+
+
+CFLAGS=-Wall -Wextra
 LDLIBS=$(shell sdl-config --libs --cflags) -lSDL_gfx
 
 all: meo_remote meo_remote.bmp
@@ -18,7 +21,6 @@ push: commit
 pull:
 	git pull
 	git submodule update --recursive --remote
-
 
 test:
 	echo 'dynamically_created_rule1' >> .gitignore

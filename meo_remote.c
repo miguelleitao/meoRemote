@@ -51,9 +51,11 @@ typedef struct {
 } tButton;
 
 #define MAX_BUTTONS (44)
-tButton Buttons[MAX_BUTTONS];
+tButton Button[MAX_BUTTONS];
 int nButtons = 0;
+int selectedButton = 0;
 
+SDL_Surface *gHelloWorld = NULL;
 
 /* 
  * error - wrapper for perror
@@ -84,12 +86,32 @@ static SDL_Surface *createSurface() {
     return screen;
 }
 
+void markButton(SDL_Surface *screen, int b) {
+    aacircleColor(screen, Button[b].x, Button[b].y, POINT_RADIUS, COLOR_POINT);
+}
+
+void drawButtons(SDL_Surface *screen) {
+    for( int i=0 ; i<nButtons ; i++ ) {
+	aacircleColor(screen, Button[i].x, Button[i].y, POINT_RADIUS, COLOR_FIELD);
+    }
+}
+
+static void screenDraw(SDL_Surface *screen) {
+    // fill all screen with black color
+    SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
+
+    //Apply the image
+    SDL_BlitSurface( gHelloWorld, NULL, screen, NULL );
+
+    if ( draw_buttons ) drawButtons(screen);
+
+}
+
 static void initialDraw(SDL_Surface *screen) {
     // fill all screen with black color
     SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 
     stringColor(screen, TITLE_X, TITLE_Y, "Use arrows or mouse to move point, use Esc to exit.", 0x000000ff);
-
 
     // draw field
     boxColor(screen, field_x + BORDER_WIDTH, field_y + BORDER_WIDTH,
@@ -124,6 +146,23 @@ static void movePoint(SDL_Surface *screen, int new_x, int new_y) {
     }
 }
 
+int findNextButton(int dx, int dy) {
+    int best = selectedButton;
+    int minDist = 1e8;
+    for( int i=0 ; i<nButtons ; i++ ) {
+	if ( i==selectedButton ) continue;
+	int bdx = Button[i].x - Button[selectedButton].x; 
+	int bdy = Button[i].y - Button[selectedButton].y;
+	if ( bdx*dx<0 || bdy*dy<0 ) continue;
+	int d = abs(bdx)/(30*dx*dx+1)+abs(bdy)/(30*dy*dy+1);
+	if ( d<minDist ) {
+	    minDist = d;
+	    best = i;
+	}
+    }
+    return best;
+}
+
 /* Returns 1 if quit. */
 static int processKey(SDL_Surface *screen, SDLKey key) {
     // position change
@@ -133,7 +172,6 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
     switch (key) {
         case SDLK_ESCAPE:
             return 1;
-
         case SDLK_UP:
             dy = -1;
             break;
@@ -151,7 +189,10 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
     }
 
     if (dx != 0 || dy != 0) {
-        movePoint(screen, point_x + dx * POINT_SPEED, point_y + dy * POINT_SPEED);
+        //movePoint(screen, point_x + dx * POINT_SPEED, point_y + dy * POINT_SPEED);
+	selectedButton = findNextButton(dx,dy);
+	screenDraw(screen);
+	markButton(screen, selectedButton);
     }
     return 0;
 }
@@ -170,23 +211,23 @@ void processMouseDown(SDL_Surface *screen, Uint8 button, Uint16 x, Uint16 y) {
         movePoint(screen, x, y);
     }
     int sel=-1;
-    int rad2 = POINT_RADIUS*POINT_RADIUS;
+    const int rad2 = POINT_RADIUS*POINT_RADIUS;
 printf("x y = %d %d\n", x,y);
     for( int i=0 ; i<nButtons ; i++ ) {
-	int dx = x - Buttons[i].x;
-	int dy = y - Buttons[i].y;
+	int dx = x - Button[i].x;
+	int dy = y - Button[i].y;
 	int dist = dx*dx + dy*dy;
 
-	//printf("  dist = %d %d, %d %d\n", i, dist, Buttons[i].x, Buttons[i].y);
+	//printf("  dist = %d %d, %d %d\n", i, dist, Button[i].x, Button[i].y);
 	if ( dist<=rad2 ) {
 	    sel = i;
 	    break;
 	}
     }
     if ( sel>=0 ) {
-	int cod = Buttons[sel].code;
-        sendCommand(cod);
-	printf("enviou = %d %d\n", sel, cod);
+	selectedButton = Button[sel].code;
+        sendCommand(selectedButton);
+	printf("enviou = %d %d\n", sel, selectedButton);
     }
 }
 
@@ -196,10 +237,10 @@ void addButton(int x, int y, int cod, char *tag) {
 	return;
     } 
     //aacircleColor(screen, x, y, POINT_RADIUS, COLOR_FIELD);
-    Buttons[nButtons].x = x;
-    Buttons[nButtons].y = y;
-    Buttons[nButtons].code = cod;
-    Buttons[nButtons].tag = strdup(tag);
+    Button[nButtons].x = x;
+    Button[nButtons].y = y;
+    Button[nButtons].code = cod;
+    Button[nButtons].tag = strdup(tag);
     nButtons++;
 }
 
@@ -219,6 +260,12 @@ int defineButtons() {
     const int BASE = 30;
     const int BASE5 = BASE+13;
     const int LINE = 30;
+    const int BASE12 = BASE+13*LINE;
+
+    const int QUAD1 = LEFT3-3;
+    const int QUAD2 = CENTER-13;
+    const int QUAD3 = CENTER+13;
+    const int QUAD4 = RIGHT3+3;
 
     addButton(RIGHT3, BASE, 233, "Power");
 
@@ -229,8 +276,8 @@ int defineButtons() {
     }
     addNumButton( CENTER, 4*LINE+BASE, 0 );
 
-    addButton( LEFT3,  4*LINE+BASE, nButtons+42, "Num");
-    addButton( RIGHT3, 4*LINE+BASE, nButtons+42, "Num");
+    addButton( LEFT3,  4*LINE+BASE, nButtons+42, "Back");   // code not set
+    addButton( RIGHT3, 4*LINE+BASE, 43, "Enter");
 
     // vol    
     addButton( LEFT3,  5*LINE+BASE5, 175, "Vol+");
@@ -239,6 +286,32 @@ int defineButtons() {
     // p+/p-
     addButton( RIGHT3, 5*LINE+BASE5, 33, "Prog+");
     addButton( RIGHT3, 7*LINE+BASE5+17, 34, "Prog-");
+
+    // +
+    addButton( CENTER, 5*LINE+BASE5,    38, "Up");
+    addButton( CENTER, 7*LINE+BASE5+17, 40, "Down");
+    addButton( LEFT3,  6*LINE+BASE5+8, 37, "Left");
+    addButton( RIGHT3, 6*LINE+BASE5+8, 39, "Right");
+
+    addButton( CENTER, 6*LINE+BASE5+8, 34, "Ok");     // code not set
+
+    // moves
+    addButton( QUAD1, BASE12, 177, "Prev");
+    addButton( QUAD2, BASE12, 40, "Rewind");
+    addButton( QUAD3, BASE12, 37, "Forward");
+    addButton( QUAD4, BASE12, 178, "Next");
+
+    // Colors
+    addButton( QUAD1, BASE12+LINE-1, 38, "Red");
+    addButton( QUAD2, BASE12+LINE-1, 40, "Green");
+    addButton( QUAD3, BASE12+LINE-1, 37, "Yellow");
+    addButton( QUAD4, BASE12+LINE-1, 39, "Blue");
+
+    // bottom
+    addButton( QUAD1, BASE12+2*LINE-1, 173, "Mute");
+    addButton( QUAD2, BASE12+2*LINE-1, 40,  "Sound");
+    addButton( QUAD3, BASE12+2*LINE-1, 37,  "Options");
+    addButton( QUAD4, BASE12+2*LINE-1, 39,  "TV/STB");
 
 
 /*
@@ -272,7 +345,7 @@ int defineButtons() {
 // 34 prog-
 // 36 menu
 // 37 <
-// 38 /\
+// 38 /\ .
 // 39 >
 // 40 v
 // 43 enter
@@ -286,16 +359,8 @@ int defineButtons() {
 // 178 ->
 // 179 pause
 
-
+  return nButtons;
 }
-
-void drawButtons(SDL_Surface *screen) {
-    for( int i=0 ; i<nButtons ; i++ ) {
-	aacircleColor(screen, Buttons[i].x, Buttons[i].y, POINT_RADIUS, COLOR_FIELD);
-    }
-}
-
-
 
 int main(int argc, char **argv) {
     int quit;
@@ -348,15 +413,14 @@ int main(int argc, char **argv) {
     field_height = SCREEN_HEIGHT - field_y - FIELD_PADDING;
 
     initialDraw(screen);
+    defineButtons();
 
-    SDL_Surface *gHelloWorld = SDL_LoadBMP( "meo_remote.bmp" );
+    gHelloWorld = SDL_LoadBMP( "meo_remote.bmp" );
     if( gHelloWorld == NULL )     {
         printf( "Unable to load image %s! SDL Error: %s\n", "meo_remote.bmp", SDL_GetError() );
     }
     else //Apply the image
             SDL_BlitSurface( gHelloWorld, NULL, screen, NULL );
-
-    defineButtons();
 
     if ( draw_buttons ) drawButtons(screen);
 
@@ -402,8 +466,6 @@ int main(int argc, char **argv) {
                 case SDL_MOUSEBUTTONDOWN: {
                     SDL_MouseButtonEvent be = event.button;
                     processMouseDown(screen, be.button, be.x, be.y);
-
-
 /*
 	char *msg = "key=51\n";
     	int n = write(destSock, msg, strlen(msg));
@@ -416,6 +478,7 @@ int main(int argc, char **argv) {
 
         SDL_Flip(screen);
         SDL_Delay(33); // ~ 60 fps
+        // screenDraw(screen);
     }
 
     close(destSock);
