@@ -14,6 +14,13 @@ all: ${EXEC} meo_remote.bmp button_list.txt
 meo_remote.bmp: meo_remote_large.png
 	convert $< -resize 170x640 $@
 
+config:
+	rm ${EXEC}.conf
+	@make ${EXEC}.conf
+
+${EXEC}.conf:
+	./findBox -c >$@
+
 button_list.txt: ${EXEC}
 	./$< -l | cut -c4- |sort -n >$@
 

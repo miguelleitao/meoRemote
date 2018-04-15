@@ -354,6 +354,7 @@ printf("reading file %s\n", fname);
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
+    static int nBox = 0;
     while ((read = getline(&line, &len, fcfg)) != -1) {
         printf("Retrieved line of length %zu :\n", read);
         printf("%s", line);
@@ -361,12 +362,14 @@ printf("reading file %s\n", fname);
 	while( *tline == ' ' ) tline++;
 	if ( strncasecmp(tline,"box",3)==0 ) {
 	    tline += 3;
-	    int nBox = *tline - '0';
+	    if ( *tline!='=' && *tline!=' ' ) {
+		nBox = *tline - '0';
+		tline++;
+	    }
 	    if ( nBox<0 || nBox>=MAX_NBOXES ) {
 		fprintf(stderr,"Error: Invalid box number: %s:%s\n", fname, line);
 		exit(1);
 	    }
-	    tline++;
 	    while( *tline==' ' || *tline=='=' ) tline++;
 	    char *tlend;
 	    tlend = strchr(tline,'\n');
@@ -374,6 +377,7 @@ printf("reading file %s\n", fname);
 	    tlend = strchr(tline,'\r');
 	    if ( tlend ) *tlend = 0;
 	    Box[nBox] = strdup(tline);
+	    nBox++;
 	}
     }
     fclose(fcfg);
