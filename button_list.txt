@@ -1,6 +1,15 @@
+
   0 (102,479) "TV/STB"
+0=192.168.1.65
   0 ( 23,150) "Backspace"
   0 ( 48,479) "Sound"
+ding confs
+ding file /etc/meoRemote.conf
+ding file ~/.meoRemote.conf
+ding file meoRemote.conf
+ding file /usr/local/etc/meoRemote.conf
+rieved line of length 1 :
+rieved line of length 18 :
   8 ( 20,318) "Back"
  13 ( 61,231) "Ok"
  27 ( 48,318) "Esc"

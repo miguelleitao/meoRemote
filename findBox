@@ -12,8 +12,17 @@
 #     NetMaskLen defaults to 28. Use 24 for a wider search.
 #
 mask=28
+if [ "$1" == "-q" ]; then
+    quiet=1
+    shift
+fi
+if [ "$1" == "-c" ]; then
+    conf=1
+    quiet=1
+    shift
+fi
 [ "$1" != "" ] && mask=$1
-echo "# meoBoxes found:"
+[ "$quiet" != "1" ] && echo "# meoBoxes found:"
 addrs=`ifconfig | grep  -e 'inet .*: ' |grep -v 127.0.0.1 |cut -f2 -d: |cut -d' ' -f2`
 for i in $addrs; do
   #echo $i

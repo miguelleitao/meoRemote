@@ -44,6 +44,9 @@ short int list_buttons = 0;
 short int draw_buttons = 0;
 short int draw_mark = 0;
 
+#define MAX_NBOXES (4)
+char *Box[MAX_NBOXES];
+
 typedef struct {
   short int x, y;
   char *tag;
@@ -328,7 +331,6 @@ int defineButtons() {
     addButton( QUAD3, BASE12, 121, "Forward");
     addButton( QUAD4, BASE12, 122, "Next");
 
-
     // Colors
     addButton( QUAD1, BASE12+LINE-1, 38, "Red");
     addButton( QUAD2, BASE12+LINE-1, 40, "Green");
@@ -342,6 +344,49 @@ int defineButtons() {
     addButton( QUAD4, BASE12+2*LINE-1,   0, "TV/STB");	// Local. No remote function
 
     return nButtons;
+}
+
+int readConfigFile(const char *fname) {
+printf("reading file %s\n", fname);
+    FILE *fcfg;
+    fcfg = fopen(fname, "r");
+    if ( ! fcfg ) return 0;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    while ((read = getline(&line, &len, fcfg)) != -1) {
+        printf("Retrieved line of length %zu :\n", read);
+        printf("%s", line);
+	char *tline = line;
+	while( *tline == ' ' ) tline++;
+	if ( strncasecmp(tline,"box",3)==0 ) {
+	    tline += 3;
+	    int nBox = *tline - '0';
+	    if ( nBox<0 || nBox>=MAX_NBOXES ) {
+		fprintf(stderr,"Error: Invalid box number: %s:%s\n", fname, line);
+		exit(1);
+	    }
+	    tline++;
+	    while( *tline==' ' || *tline=='=' ) tline++;
+	    char *tlend;
+	    tlend = strchr(tline,'\n');
+	    if ( tlend ) *tlend = 0;
+	    tlend = strchr(tline,'\r');
+	    if ( tlend ) *tlend = 0;
+	    Box[nBox] = strdup(tline);
+	}
+    }
+    fclose(fcfg);
+    return 1;
+}
+
+int readConfig() {
+    int read = 0;
+    read += readConfigFile("/etc/meoRemote.conf");
+    read += readConfigFile("/usr/local/etc/meoRemote.conf");
+    read += readConfigFile("~/.meoRemote.conf");
+    read += readConfigFile("meoRemote.conf");
+    return read;
 }
 
 int main(int argc, char **argv) {
@@ -388,6 +433,8 @@ int main(int argc, char **argv) {
 	argc--;
 	argv++;
     } // while
+printf("reading confs\n");
+    readConfig();
 		    
     SDL_Surface *screen = createSurface();
 
@@ -421,9 +468,10 @@ int main(int argc, char **argv) {
         error("ERROR opening socket");
 
     /* gethostbyname: get the server's DNS entry */
-    struct hostent *server = gethostbyname(destAddr);
+    int boxNum = 0;
+    struct hostent *server = gethostbyname(Box[boxNum]);
     if (server == NULL) {
-        fprintf(stderr,"ERROR, no such host as %s\n", destAddr);
+        fprintf(stderr,"ERROR, no such host as '%s'\n", Box[boxNum]);
         exit(0);
     }
 
@@ -457,10 +505,6 @@ int main(int argc, char **argv) {
                 case SDL_MOUSEBUTTONDOWN: {
                     SDL_MouseButtonEvent be = event.button;
                     processMouseDown(screen, be.button, be.x, be.y);
-/*
-	char *msg = "key=51\n";
-    	int n = write(destSock, msg, strlen(msg));
-    	if (n < 0) error("ERROR writing to socket");*/
 
                     break;
                 }
