@@ -31,11 +31,7 @@
 #define COLOR_FIELD  0x00FF00FF
 #define COLOR_POINT  0xFF0000FF
 
-static int field_x, field_y; // top-left corner
-static int field_width, field_height;
-static int point_x, point_y;
-
-char *destAddr = "192.168.1.65";
+char *destAddr = "192.168.1.64";
 char *destMask = NULL;
 int  destPort  = 8082;
 int  destSock  = 0;
@@ -120,40 +116,6 @@ static void screenDraw(SDL_Surface *screen) {
 static void initialDraw(SDL_Surface *screen) {
     // fill all screen with black color
     SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
-
-    stringColor(screen, TITLE_X, TITLE_Y, "Use arrows or mouse to move point, use Esc to exit.", 0x000000ff);
-
-    // draw field
-    boxColor(screen, field_x + BORDER_WIDTH, field_y + BORDER_WIDTH,
-            field_x + field_width - BORDER_WIDTH - 1, field_y + field_height - BORDER_WIDTH - 1,
-            COLOR_FIELD);
-
-    point_x = field_x + field_width/2;
-    point_y = field_y + field_height/2;
-
-    //aacircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_POINT);
-}
-
-static int limitValue(int x, int min, int max) {
-    return (x < min) ? min : ((x > max) ? max : x);
-}
-
-static void movePoint(SDL_Surface *screen, int new_x, int new_y) {
-    new_x = limitValue(new_x,
-                       field_x + BORDER_WIDTH + POINT_RADIUS,
-                       field_x + field_width - BORDER_WIDTH - POINT_RADIUS - 1);
-
-    new_y = limitValue(new_y,
-                       field_y + BORDER_WIDTH + POINT_RADIUS,
-                       field_y + field_height - BORDER_WIDTH - POINT_RADIUS - 1);
-
-    if (new_x != point_x || new_y != point_y) {
-        //filledCircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_FIELD);
-	//aacircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_FIELD);
-        point_x = new_x;
-        point_y = new_y;
-        aacircleColor(screen, point_x, point_y, POINT_RADIUS, COLOR_POINT);
-    }
 }
 
 int findNextButton(int dx, int dy) {
@@ -217,8 +179,8 @@ void sendCommand(int cmd) {
 }
 
 void processMouseDown(SDL_Surface *screen, Uint8 button, Uint16 x, Uint16 y) {
-    if (button == 1) {
-        movePoint(screen, x, y);
+    if (button != 1) {
+        return;
     }
     int sel=-1;
     const int rad2 = POINT_RADIUS*POINT_RADIUS;
@@ -347,7 +309,6 @@ int defineButtons() {
 }
 
 int readConfigFile(const char *fname) {
-printf("reading file %s\n", fname);
     FILE *fcfg;
     fcfg = fopen(fname, "r");
     if ( ! fcfg ) return 0;
@@ -356,7 +317,6 @@ printf("reading file %s\n", fname);
     ssize_t read;
     static int nBox = 0;
     while ((read = getline(&line, &len, fcfg)) != -1) {
-        printf("Retrieved line of length %zu :\n", read);
         printf("%s", line);
 	char *tline = line;
 	while( *tline == ' ' ) tline++;
@@ -381,6 +341,7 @@ printf("reading file %s\n", fname);
 	}
     }
     fclose(fcfg);
+    free(line);
     return 1;
 }
 
@@ -395,6 +356,13 @@ int readConfig() {
 
 int main(int argc, char **argv) {
     int quit;
+    for( int i=0 ; i<MAX_NBOXES ; i++ )
+	Box[i] = NULL;
+
+    readConfig();
+    int boxNum = 0;
+    destAddr = Box[boxNum];
+
     while( argc>1 ) {
 	if ( argv[1][0]=='-' ) {
 	    switch (argv[1][1]) {
@@ -437,16 +405,8 @@ int main(int argc, char **argv) {
 	argc--;
 	argv++;
     } // while
-printf("reading confs\n");
-    readConfig();
 		    
     SDL_Surface *screen = createSurface();
-
-    // calculate size of field and other initializations
-    field_x = FIELD_PADDING;
-    field_y = FIELD_PADDING + TITLE_Y + 10; // 10 is approximation of title height
-    field_width = SCREEN_WIDTH - field_x - FIELD_PADDING;
-    field_height = SCREEN_HEIGHT - field_y - FIELD_PADDING;
 
     initialDraw(screen);
     defineButtons();
@@ -472,10 +432,9 @@ printf("reading confs\n");
         error("ERROR opening socket");
 
     /* gethostbyname: get the server's DNS entry */
-    int boxNum = 0;
-    struct hostent *server = gethostbyname(Box[boxNum]);
+    struct hostent *server = gethostbyname(destAddr);
     if (server == NULL) {
-        fprintf(stderr,"ERROR, no such host as '%s'\n", Box[boxNum]);
+        fprintf(stderr,"ERROR, no such host as '%s'\n", destAddr);
         exit(0);
     }
 
@@ -521,6 +480,16 @@ printf("reading confs\n");
     }
 
     close(destSock);
+
+    for( int i=0 ; i<nButtons ; i++ )
+	free(Button[i].tag);
+    for( int i=0 ; i<MAX_NBOXES ; i++ )
+	free(Box[i]);
+
+    SDL_FreeSurface(wallPaper);
+    SDL_FreeSurface(screen);
+    SDL_Quit();
+
     return 0;
 }
 
