@@ -39,6 +39,7 @@ int  destSock  = 0;
 short int list_buttons = 0;
 short int draw_buttons = 0;
 short int draw_mark = 0;
+short int one_shoot = -1;
 
 #define MAX_NBOXES (4)
 char *Box[MAX_NBOXES];
@@ -118,6 +119,15 @@ static void initialDraw(SDL_Surface *screen) {
     SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 }
 
+void sendCommand(int cmd) {
+	if ( destSock<0 ) return;
+	char msg[20];
+	sprintf(msg, "key=%d\n", cmd);
+    	/* send the message line to the server */
+    	int n = write(destSock, msg, strlen(msg));
+    	if (n < 0) error("ERROR writing to socket");
+}
+
 int findNextButton(int dx, int dy) {
     int best = selectedButton;
     int minDist = 1e8;
@@ -126,7 +136,7 @@ int findNextButton(int dx, int dy) {
 	int bdx = Button[i].x - Button[selectedButton].x; 
 	int bdy = Button[i].y - Button[selectedButton].y;
 	if ( bdx*dx<0 || bdy*dy<0 ) continue;
-	int d = abs(bdx)/(30*dx*dx+1)+abs(bdy)/(30*dy*dy+1);
+	int d = abs(bdx)/(2*dx*dx+2)+abs(bdy)/(2*dy*dy+2);
 	if ( d<minDist ) {
 	    minDist = d;
 	    best = i;
@@ -156,6 +166,10 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
         case SDLK_RIGHT:
             dx = 1;
             break;
+	case SDLK_SPACE:
+	case SDLK_RETURN:
+	    sendCommand(Button[selectedButton].code);
+	    break;
         default:
             break;
     }
@@ -169,14 +183,6 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
     return 0;
 }
 
-void sendCommand(int cmd) {
-	if ( destSock<0 ) return;
-	char msg[20];
-	sprintf(msg, "key=%d\n", cmd);
-    	/* send the message line to the server */
-    	int n = write(destSock, msg, strlen(msg));
-    	if (n < 0) error("ERROR writing to socket");
-}
 
 void processMouseDown(SDL_Surface *screen, Uint8 button, Uint16 x, Uint16 y) {
     if (button != 1) {
@@ -361,7 +367,7 @@ int main(int argc, char **argv) {
 
     readConfig();
     int boxNum = 0;
-    destAddr = Box[boxNum];
+    if (Box[boxNum]) destAddr = Box[boxNum];
 
     while( argc>1 ) {
 	if ( argv[1][0]=='-' ) {
@@ -397,6 +403,11 @@ int main(int argc, char **argv) {
 		case 'l':
 		    list_buttons = 1;
 		    break;
+		case '1':
+		    one_shoot = atoi(argv[2]);
+		    argc--;
+		    argv++;
+		    break;
 	    }
 	}
 	else {
@@ -405,26 +416,31 @@ int main(int argc, char **argv) {
 	argc--;
 	argv++;
     } // while
-		    
-    SDL_Surface *screen = createSurface();
-
-    initialDraw(screen);
+		 
+    
     defineButtons();
+   
+    SDL_Surface *screen = NULL;
+    if ( one_shoot<0 ) {
+	screen = createSurface();
+    	initialDraw(screen);
+    }
 
     if ( list_buttons ) {
 	listButtons();
 	exit(0);
     }
 
-    wallPaper = SDL_LoadBMP( "meo_remote.bmp" );
-    if( wallPaper == NULL )     {
-        printf( "Unable to load image %s! SDL Error: %s\n", "meo_remote.bmp", SDL_GetError() );
-    }
-    else //Apply the image
+    if ( one_shoot<0 ) {
+    	wallPaper = SDL_LoadBMP( "meo_remote.bmp" );
+    	if( wallPaper == NULL )     {
+            printf( "Unable to load image %s! SDL Error: %s\n", "meo_remote.bmp", SDL_GetError() );
+    	}
+    	else //Apply the image
             SDL_BlitSurface( wallPaper, NULL, screen, NULL );
 
-    if ( draw_buttons ) drawButtons(screen);
-    
+    	if ( draw_buttons ) drawButtons(screen);
+    }
 
     /* socket: create the socket */
     destSock = socket(AF_INET, SOCK_STREAM, 0);
@@ -449,6 +465,11 @@ int main(int argc, char **argv) {
     /* connect: create a connection with the server */
     if (connect(destSock, &serveraddr, sizeof(serveraddr)) < 0) 
       perror("ERROR connecting");
+
+    if ( one_shoot>=0 ) {
+	sendCommand(one_shoot);
+	exit(0);
+    }
 
     quit = 0;
     while (!quit) {
