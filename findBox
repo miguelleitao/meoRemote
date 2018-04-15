@@ -1,9 +1,22 @@
 #!/bin/bash
+#
+# findBox
+#
+# (c) Miguel Leitao, 2016
+# Part of meoRemote: https://github.com/miguelleitao/meoRemote
+#
+# Scans network for available meoBoxes.
+#
+# Usage: ./findBox [NetMaskLen [NetAddr]]
+#     NetAddr defaults to addresses from all available net interfaces.
+#     NetMaskLen defaults to 28. Use 24 for a wider search.
+#
+mask=28
+[ "$1" != "" ] && mask=$1
 echo "# meoBoxes found:"
 addrs=`ifconfig | grep  -e 'inet .*: ' |grep -v 127.0.0.1 |cut -f2 -d: |cut -d' ' -f2`
 for i in $addrs; do
   #echo $i
-  nmap  -p T:8082 $i/28 |grep -B 4 open |grep report |cut -f5 -d' '
+  nmap  -p T:8082 $i/$mask |grep -B 4 open |grep report |cut -f5 -d' '
 done
-#nmap  -p T:8082 192.168.1.64/28 |grep -B 4 open |grep report |cut -f5 -d' '
 
