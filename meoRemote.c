@@ -136,7 +136,7 @@ int findNextButton(int dx, int dy) {
 	int bdx = Button[i].x - Button[selectedButton].x; 
 	int bdy = Button[i].y - Button[selectedButton].y;
 	if ( bdx*dx<0 || bdy*dy<0 ) continue;
-	int d = abs(bdx)/(2*dx*dx+2)+abs(bdy)/(2*dy*dy+2);
+	int d = abs(bdx)/(2*dx*dx+1)+abs(bdy)/(2*dy*dy+1);
 	if ( d<minDist ) {
 	    minDist = d;
 	    best = i;
