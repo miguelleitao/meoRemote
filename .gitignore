@@ -1,5 +1,8 @@
 meo_remote
 meoRemote
+*.bmp
+meoRemote*.png
+
 # Prerequisites
 *.d
 
