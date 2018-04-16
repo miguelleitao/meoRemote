@@ -6,6 +6,8 @@ ICON=${EXEC}-icon.png
 SKIN=${EXEC}-skin.bmp
 CONFIG=${EXEC}.conf
 
+TARGETS=${EXEC} ${DESKTOP} ${ICON} ${SKIN} ${CONFIG} button_list.txt
+
 ifeq ($(PREFIX),)
     PREFIX := /usr/local
 endif
@@ -14,7 +16,9 @@ DEFS=-D CONFIG=\"${CONFIG}\" -D SKIN=\"${SKIN}\"
 CFLAGS=-Wall -Wextra -O2 ${DEFS}
 LDLIBS=$(shell sdl-config --libs --cflags) -lSDL_gfx
 
-all: ${EXEC} meo_remote.bmp button_list.txt
+normal: ${EXEC} ${SKIN} ${CONFIG}
+
+all: ${TARGETS} 
 
 ${SKIN}: meo_remote_large.png
 	convert $< -resize 170x640 $@
@@ -34,7 +38,7 @@ button_list.txt: ${EXEC}
 	./$< -l | cut -c4- |sort -n >$@
 
 clean:
-	rm -rf ${EXEC} meo_remote.bmp button_list.txt
+	-rm -rf ${TARGETS} 
 
 commit:
 	git add .
@@ -47,7 +51,7 @@ pull:
 	git pull
 	git submodule update --recursive --remote
 
-install: ${EXEC}
+install: all
 	install -d $(DESTDIR)$(PREFIX)/bin/
 	install -m 755 ${EXEC} $(DESTDIR)$(PREFIX)/bin/
 	install -d $(DESTDIR)$(PREFIX)/share/pixmaps/
