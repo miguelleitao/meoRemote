@@ -1,4 +1,4 @@
-# meo_remote
+# meoRemote
 Control the MEO iptv box by TCP/IP.
 ## Build and Install
 ### Install build dependencies
