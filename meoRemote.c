@@ -56,6 +56,11 @@ tButton Button[MAX_BUTTONS];
 int nButtons = 0;
 int selectedButton = 0;
 
+#ifndef SKIN
+#define SKIN "meoRemote-skin.bmp"
+#endif
+
+char *skinFilename = NULL;
 SDL_Surface *wallPaper = NULL;
 
 /* 
@@ -105,7 +110,7 @@ void listButtons() {
 
 static void screenDraw(SDL_Surface *screen) {
     // fill all screen with black color
-    SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
+    //SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 
     //Apply the image
     SDL_BlitSurface( wallPaper, NULL, screen, NULL );
@@ -117,6 +122,7 @@ static void screenDraw(SDL_Surface *screen) {
 static void initialDraw(SDL_Surface *screen) {
     // fill all screen with black color
     SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
+    screenDraw(screen);
 }
 
 void sendCommand(int cmd) {
@@ -315,6 +321,8 @@ int defineButtons() {
 }
 
 int readConfigFile(const char *fname) {
+    if ( !  fname ) return 0;
+    if ( ! *fname ) return 0;
     FILE *fcfg;
     fcfg = fopen(fname, "r");
     if ( ! fcfg ) return 0;
@@ -342,8 +350,20 @@ int readConfigFile(const char *fname) {
 	    if ( tlend ) *tlend = 0;
 	    tlend = strchr(tline,'\r');
 	    if ( tlend ) *tlend = 0;
+	    free(Box[nBox]);
 	    Box[nBox] = strdup(tline);
 	    nBox++;
+	}
+	if ( strncasecmp(tline,"skin",4)==0 ) {
+	    tline += 4;
+	    while( *tline == ' ' || *tline=='=' ) tline++;
+	    char *tlend;
+	    tlend = strchr(tline,'\n');
+	    if ( tlend ) *tlend = 0;
+	    tlend = strchr(tline,'\r');
+	    if ( tlend ) *tlend = 0;
+	    free(skinFilename);
+	    skinFilename = strdup(tline);
 	}
     }
     fclose(fcfg);
@@ -353,8 +373,9 @@ int readConfigFile(const char *fname) {
 
 int readConfig() {
     int read = 0;
+    read += readConfigFile(CONFIG);
     read += readConfigFile("/etc/meoRemote.conf");
-    read += readConfigFile("/usr/local/etc/meoRemote.conf");
+    read += readConfigFile("/usr/local/share/meoRemote/config/meoRemote.conf");
     read += readConfigFile("~/.meoRemote.conf");
     read += readConfigFile("meoRemote.conf");
     return read;
@@ -432,14 +453,16 @@ int main(int argc, char **argv) {
     }
 
     if ( one_shoot<0 ) {
-    	wallPaper = SDL_LoadBMP( "meo_remote.bmp" );
+        if ( ! skinFilename ) skinFilename = SKIN;
+    	wallPaper = SDL_LoadBMP( skinFilename );
     	if( wallPaper == NULL )     {
-            printf( "Unable to load image %s! SDL Error: %s\n", "meo_remote.bmp", SDL_GetError() );
-    	}
+            printf( "Unable to load skin image '%s'! SDL Error: %s\n", skinFilename, SDL_GetError() );
+    	}/* 
     	else //Apply the image
             SDL_BlitSurface( wallPaper, NULL, screen, NULL );
 
-    	if ( draw_buttons ) drawButtons(screen);
+    	if ( draw_buttons ) drawButtons(screen);*/
+	initialDraw(screen);
     }
 
     /* socket: create the socket */
