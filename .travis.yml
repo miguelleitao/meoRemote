@@ -1,0 +1,10 @@
+
+language: c
+sudo: false # only for faster builds
+script:
+  - gcc -Wall -coverage -O0 meoRemote.c -D MAX_I=8 -o meoRemote
+  - ./meoRemote -1 0
+  - gcov meoRemote.c
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
