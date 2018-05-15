@@ -158,6 +158,10 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
     int dx = 0;
     int dy = 0;
 
+    if ( key>=SDLK_0 && key<=SDLK_9 ) {
+        sendCommand(key - SDLK_0 + 48);
+	return 0;
+    }
     switch (key) {
         case SDLK_ESCAPE:
             return 1;
@@ -176,6 +180,16 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
 	case SDLK_SPACE:
 	case SDLK_RETURN:
 	    sendCommand(Button[selectedButton].code);
+	    break;
+	case SDLK_p:
+	    sendCommand(33);
+	    break;
+	case SDLK_v:
+	//case SDLK_VOLUMEDOWN:
+	    sendCommand(174);
+	    break;
+	//case SDLK_VOLUMEUP:
+	    sendCommand(175);
 	    break;
         default:
             break;
@@ -502,13 +516,11 @@ int main(int argc, char **argv) {
                 case SDL_KEYDOWN:
                     if (processKey(screen, event.key.keysym.sym)) 
                         quit = 1;
-         
                     break;
 
                 case SDL_MOUSEBUTTONDOWN: {
                     SDL_MouseButtonEvent be = event.button;
                     processMouseDown(screen, be.button, be.x, be.y);
-
                     break;
 		}
             } // switch
