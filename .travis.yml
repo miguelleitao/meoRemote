@@ -4,7 +4,7 @@ sudo: true
 install:
   - sudo apt update && sudo apt -y install libsdl1.2-dev libsdl-gfx1.2-dev
 script:
-  - gcc -Wall -coverage -O0 meoRemote.c -D MAX_I=8 -I /usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -lSDL -lpthread -o meoRemote
+  - gcc -Wall -coverage -O0 meoRemote.c -std=c99 -D MAX_I=8 -I /usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -lSDL -lpthread -o meoRemote
   - ./meoRemote -1 0
   - gcov meoRemote.c
 
