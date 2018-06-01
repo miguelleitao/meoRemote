@@ -2,9 +2,8 @@
 Name=meoRemote
 Comment=Remote controller for meoBox
 Comment[pt]=Controlador remoto da meoBox
-Exec=meoRemote
-Icon=meoRemote.png
+Exec=/usr/local/bin/meoRemote
+Icon=/usr/local/share/pixmaps/meoRemote-icon.png
 Type=Application
-Categories=Utility
+Categories=Utility,Multimedia
 Terminal=false
-

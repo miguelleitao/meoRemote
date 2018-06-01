@@ -1,7 +1,7 @@
 /*
  * meoRemote
  *
- * jml, 2018
+ * miguelleitao, 2018
  *
  */
 
@@ -34,7 +34,7 @@
 char *destAddr = "192.168.1.64";
 char *destMask = NULL;
 int  destPort  = 8082;
-int  destSock  = 0;
+int  destSock  = -1;
 
 short int list_buttons = 0;
 short int draw_buttons = 0;
@@ -125,13 +125,14 @@ static void initialDraw(SDL_Surface *screen) {
     screenDraw(screen);
 }
 
-void sendCommand(int cmd) {
-	if ( destSock<0 ) return;
+int sendCommand(int cmd) {
+	if ( destSock<0 ) return -1;
 	char msg[20];
 	sprintf(msg, "key=%d\n", cmd);
     	/* send the message line to the server */
-    	int n = write(destSock, msg, strlen(msg));
-    	if (n < 0) error("ERROR writing to socket");
+	int n = send(destSock, msg, strlen(msg), MSG_NOSIGNAL);
+    	if (n < 0) perror("ERROR writing to socket");
+	return n;
 }
 
 int findNextButton(int dx, int dy) {
@@ -157,6 +158,10 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
     int dx = 0;
     int dy = 0;
 
+    if ( key>=SDLK_0 && key<=SDLK_9 ) {
+        sendCommand(key - SDLK_0 + 48);
+	return 0;
+    }
     switch (key) {
         case SDLK_ESCAPE:
             return 1;
@@ -175,6 +180,16 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
 	case SDLK_SPACE:
 	case SDLK_RETURN:
 	    sendCommand(Button[selectedButton].code);
+	    break;
+	case SDLK_p:
+	    sendCommand(33);
+	    break;
+	case SDLK_v:
+	//case SDLK_VOLUMEDOWN:
+	    sendCommand(174);
+	    break;
+	//case SDLK_VOLUMEUP:
+	    sendCommand(175);
 	    break;
         default:
             break;
@@ -211,7 +226,6 @@ void processMouseDown(SDL_Surface *screen, Uint8 button, Uint16 x, Uint16 y) {
     if ( sel>=0 ) {
 	int cod = Button[sel].code;
         sendCommand(cod);
-	//printf("sent = %d %d\n", cod, sel);
 	selectedButton=sel;
 	screenDraw(screen);
 	if ( draw_mark ) markButton(screen, selectedButton);
@@ -331,7 +345,7 @@ int readConfigFile(const char *fname) {
     ssize_t read;
     static int nBox = 0;
     while ((read = getline(&line, &len, fcfg)) != -1) {
-        printf("%s", line);
+        //printf("%s", line);
 	char *tline = line;
 	while( *tline == ' ' ) tline++;
 	if ( strncasecmp(tline,"box",3)==0 ) {
@@ -429,7 +443,7 @@ int main(int argc, char **argv) {
 		    argc--;
 		    argv++;
 		    break;
-	    }
+	    } //switch
 	}
 	else {
 	    sendCommand(atoi(argv[2]));
@@ -457,11 +471,7 @@ int main(int argc, char **argv) {
     	wallPaper = SDL_LoadBMP( skinFilename );
     	if( wallPaper == NULL )     {
             printf( "Unable to load skin image '%s'! SDL Error: %s\n", skinFilename, SDL_GetError() );
-    	}/* 
-    	else //Apply the image
-            SDL_BlitSurface( wallPaper, NULL, screen, NULL );
-
-    	if ( draw_buttons ) drawButtons(screen);*/
+    	} 
 	initialDraw(screen);
     }
 
@@ -504,24 +514,22 @@ int main(int argc, char **argv) {
                     break;
 
                 case SDL_KEYDOWN:
-                    if (processKey(screen, event.key.keysym.sym)) {
+                    if (processKey(screen, event.key.keysym.sym)) 
                         quit = 1;
-                    }
                     break;
 
                 case SDL_MOUSEBUTTONDOWN: {
                     SDL_MouseButtonEvent be = event.button;
                     processMouseDown(screen, be.button, be.x, be.y);
-
                     break;
-                }
-            }
-        }
+		}
+            } // switch
+        } // while event
 
         SDL_Flip(screen);
         SDL_Delay(33); // ~ 60 fps
         // screenDraw(screen);
-    }
+    } // while
 
     close(destSock);
 

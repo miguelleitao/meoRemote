@@ -24,7 +24,7 @@ ${SKIN}: meo_remote_large.png
 	convert $< -resize 170x640 $@
 
 ${ICON}: meo_remote_icon_large.png
-	convert $< -resize 64x64 $@
+	convert $< -resize 128x128 $@
 
 config:
 	rm ${CONFIG}
@@ -50,6 +50,18 @@ push: commit
 pull:
 	git pull
 	git submodule update --recursive --remote
+
+${DESKTOP}:
+	@echo "[Desktop Entry]" 					 >$@
+	@echo "Name=${EXEC}"					>>$@
+	@echo "Comment=Remote controller for meoBox"		>>$@
+	@echo "Comment[pt]=Controlador remoto da meoBox"		>>$@
+	@echo "Exec=$(DESTDIR)$(PREFIX)/bin/${EXEC}"		>>$@
+	@echo "Icon=$(DESTDIR)$(PREFIX)/share/pixmaps/${ICON}"	>>$@
+	@echo "Type=Application"					>>$@
+	@echo "Categories=Utility,Multimedia"			>>$@
+	@echo "Terminal=false"					>>$@
+
 
 install: all
 	install -d $(DESTDIR)$(PREFIX)/bin/

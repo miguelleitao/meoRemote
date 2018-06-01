@@ -1,2 +1,8 @@
 #!/bin/bash
-echo "key=$1" | nc -q 0 192.168.1.65 8082
+if [ $# == 0 ]; then
+echo "Usage: $0 key_num [meoBox_addr]"
+exit;
+fi
+addr=192.168.1.65
+[ "$2" != "" ] && addr=$2
+echo "key=$1" | nc -q 0 $addr 8082
