@@ -2,7 +2,7 @@
 language: c
 sudo: true
 install:
-  - sudo apt -y install libsdl1.2-dev
+  - sudo apt update && apt -y install libsdl1.2-dev
 script:
   - gcc -Wall -coverage -O0 meoRemote.c -D MAX_I=8 -o meoRemote
   - ./meoRemote -1 0
