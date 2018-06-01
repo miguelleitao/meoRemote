@@ -1,6 +1,6 @@
 
 language: c
-sudo: false # only for faster builds
+sudo: true
 install:
   - apt -y install libsdl1.2-dev
 script:
