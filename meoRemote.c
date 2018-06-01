@@ -387,7 +387,9 @@ int readConfigFile(const char *fname) {
 
 int readConfig() {
     int read = 0;
+    #ifdef CONFIG
     read += readConfigFile(CONFIG);
+    #endif
     read += readConfigFile("/etc/meoRemote.conf");
     read += readConfigFile("/usr/local/share/meoRemote/config/meoRemote.conf");
     read += readConfigFile("~/.meoRemote.conf");
