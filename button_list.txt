@@ -1,9 +1,6 @@
   0 (102,479) "TV/STB"
   0 ( 23,150) "Backspace"
   0 ( 48,479) "Sound"
-n=/usr/local/share/meoRemote/images/meoRemote-skin.bmp
-n=/usr/local/share/meoRemote/images/meoRemote-skin.bmp
-n=/usr/local/share/meoRemote/images/meoRemote-skin.bmp
   8 ( 20,318) "Back"
  13 ( 61,231) "Ok"
  27 ( 48,318) "Esc"
@@ -44,8 +41,5 @@ n=/usr/local/share/meoRemote/images/meoRemote-skin.bmp
 173 ( 20,479) "Mute"
 174 ( 23,270) "Vol-"
 175 ( 23,193) "Vol+"
- 192.168.1.65
- 192.168.1.65
- 192.168.1.65
 226 ( 99,383) "Rec"
 233 ( 99, 30) "Power"
