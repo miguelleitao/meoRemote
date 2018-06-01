@@ -502,7 +502,7 @@ int main(int argc, char **argv) {
       perror("ERROR connecting");
 
     if ( one_shoot>=0 ) {
-	sendCommand(one_shoot);
+	//sendCommand(one_shoot);
 	exit(0);
     }
 
