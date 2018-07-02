@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/miguelleitao/meoRemote.svg?branch=master "Build Status")](https://travis-ci.org/miguelleitao/meoRemote)
-[![GitHub stars](https://img.shields.io/github/stars/miguelleitao/meoRemote.svg)](https://github.com/miguelleitao/meoRemote)
+[![GitHub stars](https://img.shields.io/github/stars/miguelleitao/meoRemote.svg)](https://github.com/miguelleitao/meoRemote/stargazers)
 [![GitHub stars](https://img.shields.io/github/stars/RDFLib/rdflib.svg)](https://github.com/RDFLib/rdflib/stargazers)
-![Vaadin Directory](https://img.shields.io/vaadin-directory/v/vaadinvaadin-grid.svg)
+![Vaadin Directory](https://img.shields.io/vaadin-directory/miguelleitao/meoTemote.svg)
 
 # meoRemote
 Control the MEO iptv box by TCP/IP.
