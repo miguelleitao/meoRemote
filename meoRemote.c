@@ -184,6 +184,9 @@ static int processKey(SDL_Surface *screen, SDLKey key) {
 	case SDLK_p:
 	    sendCommand(33);
 	    break;
+	case SDLK_o:
+	    sendCommand(34);
+	    break;
 	case SDLK_v:
 	//case SDLK_VOLUMEDOWN:
 	    sendCommand(174);
