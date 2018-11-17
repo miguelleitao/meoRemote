@@ -1,6 +1,7 @@
-# meoRemote
-![image](https://travis-ci.org/miguelleitao/pipeline.svg?branch=master "Linux Build Status") | Linux x86_64
+[![Build Status](https://travis-ci.org/miguelleitao/meoRemote.svg?branch=master "Build Status")](https://travis-ci.org/miguelleitao/meoRemote)
+[![GitHub stars](https://img.shields.io/github/stars/miguelleitao/meoRemote.svg)](https://github.com/miguelleitao/meoRemote)
 
+# meoRemote
 Control the MEO iptv box by TCP/IP.
 ## Build and Install
 ### Install build dependencies

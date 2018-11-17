@@ -390,7 +390,9 @@ int readConfigFile(const char *fname) {
 
 int readConfig() {
     int read = 0;
+    #ifdef CONFIG
     read += readConfigFile(CONFIG);
+    #endif
     read += readConfigFile("/etc/meoRemote.conf");
     read += readConfigFile("/usr/local/share/meoRemote/config/meoRemote.conf");
     read += readConfigFile("~/.meoRemote.conf");
@@ -503,7 +505,7 @@ int main(int argc, char **argv) {
       perror("ERROR connecting");
 
     if ( one_shoot>=0 ) {
-	sendCommand(one_shoot);
+	//sendCommand(one_shoot);
 	exit(0);
     }
 
