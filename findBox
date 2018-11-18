@@ -27,13 +27,13 @@ fi
 addrs=`ifconfig | grep  -e 'inet .*' |grep -v 127.0.0.1 |cut -f2 -dt |cut -d' ' -f2`
 #echo "adds: " $addrs
 for i in $addrs; do
-  echo $i
+  #echo $i
   nmask=`ifconfig |grep inet |grep $i |cut -f3 -dt |cut -f2 -dk |cut -d' ' -f2`
-  echo "netmask: "$nmask
+  #echo "netmask: "$nmask
   IFS=. read -r ia1 ia2 ia3 ia4 <<< "$i"
   IFS=. read -r im1 im2 im3 im4 <<< "$nmask"
   naddr="$((ia1 & im1)).$((ia2 & im2)).$((ia3 & im3)).$((ia4 & im4))"
-  echo "netaddr:"$naddr
+  #echo "netaddr:"$naddr
   if [ "$conf" != "1" ]; then
     nmap -n -p T:8082 -Pn $naddr/$mask |grep -B 4 open |grep report |cut -f5 -d' '
   else
