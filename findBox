@@ -9,7 +9,7 @@
 #
 # Usage: ./findBox [-q] [-c] [NetMaskLenLimit [NetAddr]]
 #     NetAddr defaults to addresses from all available net interfaces.
-#     NetMaskLenLimit defaults to 28. Use 24 for a wider search.
+#     NetMaskLenLimit defaults to 24. Use 28 for a norrow (faster) search.
 #     -q: quiet mode (no header)
 #     -c: config file mode. Use ./findBox -c >appname.conf
 #
@@ -27,7 +27,7 @@ cdr2mask ()
    [ $1 -gt 1 ] && shift $1 || shift
    echo ${1-0}.${2-0}.${3-0}.${4-0}
 }
-masklen=28
+masklen=24
 if [ "$1" == "-q" ]; then
     quiet=1
     shift
