@@ -35,9 +35,9 @@ for i in $addrs; do
   naddr="$((ia1 & im1)).$((ia2 & im2)).$((ia3 & im3)).$((ia4 & im4))"
   #echo "netaddr:"$naddr
   if [ "$conf" != "1" ]; then
-    nmap -n -p T:8082 -Pn $naddr/$mask |grep -B 4 open |grep report |cut -f5 -d' '
+    nmap -n -p T:8082 -Pn --open -oG - $naddr/$mask |grep open/tcp |cut -f2 -d' '
   else
-    nmap -n -p T:8082 -Pn $naddr/$mask |grep -B 4 open |grep report |awk -c '{print "box " $5}'
+    nmap -n -p T:8082 -Pn --open -oG - $naddr/$mask |grep open/tcp |awk -c '{print "box " $2}'
   fi
 done
 
