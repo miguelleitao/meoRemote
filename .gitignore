@@ -3,6 +3,7 @@ meoRemote
 *.bmp
 meoRemote*.png
 meoRemote*.conf
+meoRemote*.ori
 
 # Prerequisites
 *.d
