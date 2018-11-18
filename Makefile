@@ -5,6 +5,8 @@ DESKTOP=${EXEC}.desktop
 ICON=${EXEC}-icon.png
 SKIN=${EXEC}-skin.bmp
 CONFIG=${EXEC}.conf
+MAIN_SKIN=$(DESTDIR)$(PREFIX)/share/${EXEC}/images/${SKIN}
+
 
 TARGETS=${EXEC} ${DESKTOP} ${ICON} ${SKIN} ${CONFIG} button_list.txt
 
@@ -27,12 +29,17 @@ ${ICON}: meo_remote_icon_large.png
 	convert $< -resize 128x128 $@
 
 config:
-	rm ${CONFIG}
+	rm -f ${CONFIG}
 	@make ${CONFIG}
 
 ${CONFIG}:
 	./findBox -c >$@
-	echo "skin=$(DESTDIR)$(PREFIX)/share/${EXEC}/images/${SKIN}" >>$@
+	@main_skin=$(DESTDIR)$(PREFIX)/share/${EXEC}/images/${SKIN}; \
+	if [ ! -f $$main_skin ]; \
+	then \
+	    main_skin=${SKIN}; \
+	fi; \
+	echo "skin $$main_skin" >>$@
 
 button_list.txt: ${EXEC}
 	./$< -l | cut -c4- |sort -n >$@

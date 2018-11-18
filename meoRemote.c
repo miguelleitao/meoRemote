@@ -353,7 +353,7 @@ int readConfigFile(const char *fname) {
 	while( *tline == ' ' ) tline++;
 	if ( strncasecmp(tline,"box",3)==0 ) {
 	    tline += 3;
-	    if ( *tline!='=' && *tline!=' ' ) {
+	    if ( *tline!='=' && *tline!=' ' && *tline!=':' ) {
 		nBox = *tline - '0';
 		tline++;
 	    }
@@ -373,7 +373,7 @@ int readConfigFile(const char *fname) {
 	}
 	if ( strncasecmp(tline,"skin",4)==0 ) {
 	    tline += 4;
-	    while( *tline == ' ' || *tline=='=' ) tline++;
+	    while( *tline == ' ' || *tline=='=' || *tline==':' ) tline++;
 	    char *tlend;
 	    tlend = strchr(tline,'\n');
 	    if ( tlend ) *tlend = 0;
