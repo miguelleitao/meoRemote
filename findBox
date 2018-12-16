@@ -16,6 +16,7 @@
 #     -c: config file mode. Use ./findBox -c >appname.conf
 #
 debug=0
+nmap_cmd="nmap -n -Pn -p T:8082 --max-hostgroup 64 --open -oG -"
 mask2cdr ()
 {
    local x=${1##*255.}
@@ -81,7 +82,7 @@ for i in $addrs; do
         for scidr in `seq 31 -1 $cidr`; do
 	    naddr=`network_addr $i $scidr`
             [ $debug = 1 ] && echo "netaddr: "$naddr
-            cmd="nmap -n -Pn -p T:8082 --max-hostgroup 64 --open -oG - --exclude $excludes $naddr/$scidr"
+            cmd="$nmap_cmd --exclude $excludes $naddr/$scidr"
             [ "$debug" = 1 ] && echo "cmd: "$cmd
             if [ "$conf" != "1" ]; then
 	        result=`$cmd |grep open/tcp | cut -f2 -d' '`
@@ -98,7 +99,7 @@ for i in $addrs; do
     else
         naddr=`network_addr $i $cidr`
         [ $debug = 1 ] && echo "netaddr: "$naddr
-        cmd="nmap -n -Pn -p T:8082 --max-hostgroup 64 --open -oG - --exclude $i $naddr/$cidr"
+        cmd="$nmap_cmd --exclude $i $naddr/$cidr"
         [ "$debug" = 1 ] && echo "cmd: "$cmd
         if [ "$conf" != "1" ]; then
 	    $cmd |grep open/tcp | cut -f2 -d' '
