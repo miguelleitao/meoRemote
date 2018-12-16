@@ -12,6 +12,7 @@
 #     NetMaskLenLimit defaults to 24. Use 28 for a norrow (faster) search.
 #     -q: quiet mode (no header)
 #     -d: debug mode
+#     -s: single mode. Only show first found box.
 #     -c: config file mode. Use ./findBox -c >appname.conf
 #
 debug=0
@@ -29,6 +30,19 @@ cdr2mask ()
    [ $1 -gt 1 ] && shift $1 || shift
    echo ${1-0}.${2-0}.${3-0}.${4-0}
 }
+
+network_addr()
+{
+  # Calculate network address from address and prefix len
+  # Usage: naddr = `network_mask ip_addr mask_len` 
+  local nmask=`cdr2mask $2`
+  local ia1; local ia2; local ia3; local ia4 
+  IFS=. read -r ia1 ia2 ia3 ia4 <<< "$1"
+  IFS=. read -r im1 im2 im3 im4 <<< "$nmask"
+  local naddr="$((ia1 & im1)).$((ia2 & im2)).$((ia3 & im3)).$((ia4 & im4))"
+  echo $naddr
+}
+
 masklen=24
 if [ "$1" == "-q" ]; then
     quiet=1
@@ -44,31 +58,53 @@ if [ "$1" == "-d" ]; then
     debug=1
     shift
 fi
+if [ "$1" == "-s" ]; then
+    single=1
+    shift
+fi
 [ "$1" != "" ] && masklen=$1
 [ "$quiet" != "1" ] && echo "# meoBoxes found:"
 addrs=`ifconfig | grep  -e 'inet .*' |grep -v 127.0.0.1 |cut -f2 -dt |cut -d' ' -f2`
 [ "$2" != "" ] && addrs=$2
-#echo "adds: " $addrs
+#echo "addrs: " $addrs
 for i in $addrs; do
-  [ "$i" = "192.168.122.1" ] && continue
-  [ "$debug" = 1 ] && echo "local address: "$i
-  nmask=`ifconfig |grep inet |grep $i |cut -f3 -dt |cut -f2 -dk |cut -d' ' -f2`
-  [ "$debug" = 1 ] && echo "netmask: "$nmask
-  min_cidr=`mask2cdr $nmask`
-  [ "$debug" = 1 ] && echo "min_cidr: "$min_cidr
-  cidr=$(( $masklen > $min_cidr ? $masklen : $min_cidr ))
-  [ "$debug" = 1 ] && echo "cidr: "$cidr 
-  nmask=`cdr2mask $cidr`
-  IFS=. read -r ia1 ia2 ia3 ia4 <<< "$i"
-  IFS=. read -r im1 im2 im3 im4 <<< "$nmask"
-  naddr="$((ia1 & im1)).$((ia2 & im2)).$((ia3 & im3)).$((ia4 & im4))"
-  [ $debug = 1 ] && echo "netaddr: "$naddr
-  cmd="nmap -n -Pn -p T:8082 --max-hostgroup 64 --open -oG - --exclude $i $naddr/$cidr"
-  [ "$debug" = 1 ] && echo "cmd: "$cmd
-  if [ "$conf" != "1" ]; then
-    $cmd |grep open/tcp | cut -f2 -d' '
-  else
-    $cmd |grep open/tcp | awk -c '{print "box " $2}'
-  fi
+    [ "$i" = "192.168.122.1" ] && continue
+    [ "$debug" = 1 ] && echo "local address: "$i
+    nmask=`ifconfig |grep inet |grep $i |cut -f3 -dt |cut -f2 -dk |cut -d' ' -f2`
+    [ "$debug" = 1 ] && echo "netmask: "$nmask
+    min_cidr=`mask2cdr $nmask`
+    [ "$debug" = 1 ] && echo "min_cidr: "$min_cidr
+    cidr=$(( $masklen > $min_cidr ? $masklen : $min_cidr ))
+    [ "$debug" = 1 ] && echo "cidr: "$cidr 
+    if [ "$single" = 1 ]; then
+	excludes=$i
+        for scidr in `seq 31 -1 $cidr`; do
+	    naddr=`network_addr $i $scidr`
+            [ $debug = 1 ] && echo "netaddr: "$naddr
+            cmd="nmap -n -Pn -p T:8082 --max-hostgroup 64 --open -oG - --exclude $excludes $naddr/$scidr"
+            [ "$debug" = 1 ] && echo "cmd: "$cmd
+            if [ "$conf" != "1" ]; then
+	        result=`$cmd |grep open/tcp | cut -f2 -d' '`
+            else
+	        result=`$cmd |grep open/tcp | awk -c '{print "box " $2}'`
+            fi
+	    size=${#result}
+	    if [ "$size" -gt 10 ]; then
+	 	echo $result
+		exit;
+	    fi
+	    excludes="$naddr/$scidr"
+	done
+    else
+        naddr=`network_addr $i $cidr`
+        [ $debug = 1 ] && echo "netaddr: "$naddr
+        cmd="nmap -n -Pn -p T:8082 --max-hostgroup 64 --open -oG - --exclude $i $naddr/$cidr"
+        [ "$debug" = 1 ] && echo "cmd: "$cmd
+        if [ "$conf" != "1" ]; then
+	    $cmd |grep open/tcp | cut -f2 -d' '
+        else
+	    $cmd |grep open/tcp | awk -c '{print "box " $2}'
+        fi
+    fi
 done
 
