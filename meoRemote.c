@@ -116,7 +116,6 @@ static void screenDraw(SDL_Surface *screen) {
     SDL_BlitSurface( wallPaper, NULL, screen, NULL );
 
     if ( draw_buttons ) drawButtons(screen);
-
 }
 
 static void initialDraw(SDL_Surface *screen) {
@@ -474,7 +473,12 @@ int main(int argc, char **argv) {
     if ( one_shoot<0 ) {
         if ( ! skinFilename ) skinFilename = SKIN;
     	wallPaper = SDL_LoadBMP( skinFilename );
-    	if( wallPaper == NULL )     {
+	if ( wallPaper == NULL ) {
+	    char skinAltName[strlen(skinFilename)+80];
+	    sprintf(skinAltName,"%s/%s","/usr/local/share/meoRemote/images/",skinFilename);
+	    wallPaper = SDL_LoadBMP( skinAltName );
+	}
+    	if ( wallPaper == NULL ) {
             printf( "Unable to load skin image '%s'! SDL Error: %s\n", skinFilename, SDL_GetError() );
     	} 
 	initialDraw(screen);
