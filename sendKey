@@ -5,4 +5,4 @@ exit;
 fi
 addr=192.168.1.65
 [ "$2" != "" ] && addr=$2
-echo "key=$1" | nc -q 0 $addr 8082
+echo "key=$1" | nc $addr 8082
