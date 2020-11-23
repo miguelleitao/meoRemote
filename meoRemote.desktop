@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=meoRemote
-Comment=Remote controller for meoBox
-Comment[pt]=Controlador remoto da meoBox
-Exec=/usr/local/bin/meoRemote
-Icon=/usr/local/share/pixmaps/meoRemote-icon.png
-Type=Application
-Categories=Utility,Multimedia
-Terminal=false

@@ -16,7 +16,13 @@
 #     -c: config file mode. Use ./findBox -c >appname.conf
 #
 debug=0
-nmap_cmd="nmap -n -Pn -p T:8082 --max-hostgroup 64 --open -oG -"
+nmap_exe="nmap"
+nmap_cmd="$nmap_exe -n -Pn -p T:8082 --max-hostgroup 64 --open -oG -"
+if ! command -v $nmap_exe &> /dev/null
+then
+   echo "Error: $nmap_exe could not be found."
+   exit
+fi
 mask2cdr ()
 {
    local x=${1##*255.}

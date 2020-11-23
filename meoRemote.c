@@ -17,7 +17,7 @@
 #define SCREEN_WIDTH  121
 #define SCREEN_HEIGHT 640
 #define BPP 32
-
+ 
 #define TITLE_X 30
 #define TITLE_Y 10
 
@@ -116,6 +116,7 @@ static void screenDraw(SDL_Surface *screen) {
     SDL_BlitSurface( wallPaper, NULL, screen, NULL );
 
     if ( draw_buttons ) drawButtons(screen);
+    SDL_Flip(screen);
 }
 
 static void initialDraw(SDL_Surface *screen) {
@@ -535,8 +536,9 @@ int main(int argc, char **argv) {
             } // switch
         } // while event
 
-        SDL_Flip(screen);
-        SDL_Delay(33); // ~ 60 fps
+        //SDL_Flip(screen);
+        //SDL_Delay(33); // ~ 60 fps
+        SDL_Delay(66); // ~ 30 fps
         // screenDraw(screen);
     } // while
 
