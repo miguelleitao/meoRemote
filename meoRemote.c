@@ -86,7 +86,8 @@ static SDL_Surface *createSurface() {
 
     screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, BPP, SDL_HWSURFACE);
     checkSDLResult(screen != 0);
-
+//SDL_SetWindowTitle(screen,"meoRemote");
+SDL_WM_SetCaption("meoRemote", NULL);
     checkSDLResult(SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL) == 0);
 
     return screen;
